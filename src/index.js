@@ -33,6 +33,16 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use(express.json())
+
+/**
+ * @swagger
+ * api/admin/statistics
+ * get:
+ *    description:these get api return statistics
+ *    responses:
+ * 200:
+ *    description: a successful response
+ */
 app.get('/', (_req, res) => {
   res.redirect('/api')
 })
@@ -62,3 +72,4 @@ app.use('/api', router)
 mongoose
 
 app.listen(config.port, () => console.log(`server is listening on port ${config.port}...`))
+module.exports = { app }

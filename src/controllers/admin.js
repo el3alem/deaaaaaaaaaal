@@ -4,7 +4,7 @@ const { getDb } = require('../utils/database')
 const db = getDb
 const { countStatusPsts, countPsts } = require('../models/post')
 const { countComments } = require('../models/comment')
-const { countInteractions } = require('../models/interaction')
+const { countInteractions, toNuOfInOnCo, toNuOfInOnPo } = require('../models/interaction')
 
 const adminStats = async (req, res) => {
   try {
@@ -14,14 +14,18 @@ const adminStats = async (req, res) => {
     const tRejected = await countStatusPsts('REJECTED')
     const tPosts = await countPsts()
     const tComments = await countComments()
+    const tnoip = await toNuOfInOnPo()
+    const tnoic = await toNuOfInOnCo()
     const tInteras = await countInteractions()
     const result = {
-      tPnding: tPending[0].status,
-      tApprved: tApproved[0].status,
-      tRejcted: tRejected[0].status,
-      tPsts: tPosts[0].status,
-      tCmments: tComments[0].status,
-      tIntras: tInteras[0].status
+      totalPendingPosts: tPending[0].status,
+      totalApprovedPosts: tApproved[0].status,
+      totalRejctedPosts: tRejected[0].status,
+      totalPosts: tPosts[0].status,
+      totalCommentsOnPosts: tComments[0].status,
+      totalInteractionsOnPosts: tnoip[0].status,
+      totalInteractionsOnComments: tnoic[0].status,
+      totalIntractions: tInteras[0].status
     }
 
     res.status(201).json(result)

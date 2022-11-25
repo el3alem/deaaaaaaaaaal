@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb')
 const mongoose = require('mongoose')
 
 const commentSchema = new mongoose.Schema({
@@ -6,7 +7,7 @@ const commentSchema = new mongoose.Schema({
     required: true
   },
   post: {
-    type: String,
+    type: ObjectId,
     required: true
   },
   createdBy: {

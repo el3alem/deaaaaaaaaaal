@@ -1,5 +1,5 @@
 const express = require('express')
-const { createPst, getAllPsts } = require('../models/post')
+const { createPst, getAllPsts, getAllApprovedPsts } = require('../models/post')
 
 const jwt = require('jsonwebtoken')
 const { getUsr } = require('../models/user')
@@ -7,16 +7,28 @@ const { getInteraById } = require('../models/interaction')
 
 const getAllPosts = async (_req, res) => {
   try {
-    const page = _req.params.page
-    console.log(page)
-    const Posts = await getAllPsts(page)
-    console.log('start')
+    const authHeader = _req.headers.authorization
+    const token = authHeader ? authHeader.split(' ')[1] : ''
+    var decoded = jwt.decode(token)
+    if (decoded.username === 'admin@deal.com') {
+      const page = _req.params.page
+      console.log(page)
+      const Posts = await getAllPsts(page)
+      console.log('start')
 
-    res.status(200).json(Posts)
+      res.status(200).json(Posts)
+    } else {
+      const page = _req.params.page
+      console.log(page)
+      const Posts = await getAllApprovedPsts(page)
+      console.log('start')
+
+      res.status(200).json(Posts)
+    }
   } catch (err) {
     console.log(err)
     res.status(500)
-    res.json(err)
+    res.json(err.message)
   }
 }
 

@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb')
 const mongoose = require('mongoose')
 
 const interactionSchema = new mongoose.Schema({
@@ -5,8 +6,8 @@ const interactionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  post: String,
-  comment: String,
+  post: ObjectId,
+  comment: ObjectId,
   createdBy: {
     _id: String,
     email: String,
@@ -28,11 +29,28 @@ const Interaction = mongoose.model('Interaction', interactionSchema)
 
 const getInteraById = async (idd) => {
   const result = interaction.aggregate([{ $match: { post: { idd } } }]).count()
-  console.log(result)
 }
 const countInteractions = async () => {
   var result = await Interaction.aggregate().count('status')
   if (result.length === 0) result = [{ status: 0 }]
   return result
 }
-module.exports = { getInteraById, countInteractions }
+const toNuOfInOnCo = async () => {
+  var result = await Interaction.aggregate([
+    {
+      $match: { post: '' }
+    }
+  ]).count('status')
+  if (result.length === 0) result = [{ status: 0 }]
+  return result
+}
+const toNuOfInOnPo = async () => {
+  var result = await Interaction.aggregate([
+    {
+      $match: { comment: '' }
+    }
+  ]).count('status')
+  if (result.length === 0) result = [{ status: 0 }]
+  return result
+}
+module.exports = { getInteraById, countInteractions, toNuOfInOnCo, toNuOfInOnPo }

@@ -45,25 +45,32 @@ const createPst = async (ttle, bdy, user) => {
     throw new Error(`Could not create post. Error: ${err}`)
   }
 }
-const getAllPsts = async (paage) => {
+const getAllApprovedPsts = async (paage) => {
   try {
     const lmt = 10
     const skipped = (parseInt(paage) - 1) * lmt
     const totalpages = await Pst.aggregate([{ $match: { status: 'APPROVED' } }]).count('total')
-    console.log(totalpages)
+
     var x = Math.floor(totalpages[0].total / lmt)
     var c = true
     var cc = true
-    if (paage === 1) cc = false
+    if (parseInt(paage) === 1) cc = false
     if (paage * lmt >= totalpages[0].total) c = false
     if (!totalpages[0].total % lmt === 0) x = x + 1
     const result = await Pst.aggregate([
       { $match: { status: 'APPROVED' } },
-      { $sort: { _id: -1 } },
 
       {
+        $lookup: {
+          from: 'interactions',
+          localField: '_id',
+          foreignField: 'post',
+          as: 'interactions'
+        }
+      },
+      {
         $facet: {
-          data: [{ $skip: skipped }, { $limit: lmt }, { $addFields: { interactions: '3' } }],
+          data: [{ $skip: skipped }, { $limit: lmt }],
           total: [{ $count: 'total' }]
         }
       },
@@ -73,6 +80,8 @@ const getAllPsts = async (paage) => {
       { $addFields: { totalpages: x } },
       { $addFields: { hasNextPage: c } },
       { $addFields: { hasPrevPage: cc } }
+
+      // { $sort: { _id: -1 } },
     ])
 
     return result
@@ -80,5 +89,46 @@ const getAllPsts = async (paage) => {
     throw new Error(`Could not return post. Error: ${err}`)
   }
 }
-module.exports = { createPst, getAllPsts, countStatusPsts, countPsts }
-// {$lookup:{ from: 'users', localField: 'userId', foreignField: 'post', as: 'users' }},
+const getAllPsts = async (paage) => {
+  try {
+    const lmt = 10
+    const skipped = (parseInt(paage) - 1) * lmt
+    const totalpages = await Pst.aggregate().count('total')
+
+    var x = Math.floor(totalpages[0].total / lmt)
+    var c = true
+    var cc = true
+    if (paage === '1') cc = false
+    if (paage * lmt >= totalpages[0].total) c = false
+    if (!totalpages[0].total % lmt === 0) x = x + 1
+    const result = await Pst.aggregate([
+      {
+        $lookup: {
+          from: 'interactions',
+          localField: '_id',
+          foreignField: 'post',
+          as: 'interactions'
+        }
+      },
+      {
+        $facet: {
+          data: [{ $skip: skipped }, { $limit: lmt }],
+          total: [{ $count: 'total' }]
+        }
+      },
+
+      { $addFields: { page: paage } },
+      { $addFields: { limit: lmt } },
+      { $addFields: { totalpages: x } },
+      { $addFields: { hasNextPage: c } },
+      { $addFields: { hasPrevPage: cc } }
+
+      // { $sort: { _id: -1 } },
+    ])
+
+    return result
+  } catch (err) {
+    throw new Error(`Could not return post. Error: ${err}`)
+  }
+}
+module.exports = { createPst, getAllPsts, getAllApprovedPsts, countStatusPsts, countPsts }
